@@ -1,5 +1,6 @@
 import { Leaf, Loader2, Recycle, ShoppingBag, Truck } from 'lucide-react'
 import banner from '../assets/forest.jpg'
+import about from '../assets/about.png'
 import { useEffect, useState } from 'react';
 import { api } from '../api/apiClient';
 import type { Product } from '../types/Product';
@@ -119,7 +120,7 @@ export default function HomePage() {
 
                 <div className='absolute inset-0 bg-green-50/70'></div>
 
-                <div className="relative z-10 max-w-7xl mx-auto">
+                <div className=" z-10 max-w-7xl mx-auto">
                     <div className="space-y-6">
                         <h1 className="text-4xl md:text-5xl font-bold leading-tight">
                             Sống xanh cùng <span className="text-green-600">Releaf</span>
@@ -164,6 +165,22 @@ export default function HomePage() {
             </section>
 
             {/* About Section */}
+            <section id='about' className='py-20'>
+                <div className='max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-10 items-center'>
+                    <img
+                        src={about}
+                        alt="about Releaf"
+                        className='rounded-2xl shadow-lg'
+                    />
+                    <div>
+                        <h2 className='text-3xl font-bold mb-4'>Về <span className='text-green-500'>Releaf</span></h2>
+                        <p className='text-gray-600 leading-relaxed mb-6'>Chúng tôi tin rằng mỗi hành động nhỏ đều có thể tạo nên thay đổi lớn.
+                            EcoBoost ra đời với sứ mệnh mang đến sản phẩm thân thiện với môi trường,
+                            giúp bạn sống xanh, tiết kiệm và bền vững hơn.</p>
+                        <button className='px-6 py-3 bg-green-500 text-white font-semibold rounded-lg hover:bg-green-600 transition'>Khám phá thêm</button>
+                    </div>
+                </div>
+            </section>
 
         </div>
 

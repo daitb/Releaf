@@ -146,4 +146,4 @@ E:\Project\Releaf\Releaf.API\obj\Debug\net8.0\Releaf.API.genruntimeconfig.cache
 E:\Project\Releaf\Releaf.API\obj\Debug\net8.0\ref\Releaf.API.dll
 E:\Project\Releaf\Releaf.API\bin\Debug\net8.0\AutoMapper.dll
 E:\Project\Releaf\Releaf.API\bin\Debug\net8.0\Repositories\Properties\launchSettings.json
-E:\Project\Releaf\Releaf.API\obj\Debug\net8.0\staticwebassets.upToDateCheck.txt
+E:\Project\Releaf\Releaf.API\obj\Debug\net8.0\Releaf.API.sourcelink.json

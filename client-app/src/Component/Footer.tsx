@@ -1,4 +1,5 @@
-import { Facebook, Instagram, Leaf } from "lucide-react";
+import { Leaf } from "lucide-react";
+import { FaFacebook, FaInstagram, FaTiktok } from "react-icons/fa";
 
 export default function Footer() {
     return (
@@ -18,6 +19,11 @@ export default function Footer() {
                             Cung cấp sản phẩm thân thiện với môi trường,
                             giảm thải C02 giúp bạn sống xanh, sống khỏe mỗi ngày
                         </p>
+                        <div className="flex gap-6">
+                            <FaFacebook className="w-6 h-6 text-gray-600 mt-4 hover:text-blue-600"/>
+                            <FaInstagram className="w-6 h-6 text-gray-600 mt-4 hover:text-red-600"/>
+                            <FaTiktok className="w-6 h-6 text-gray-600 mt-4 hover:text-[#EE1D52]" />
+                        </div>
                     </div>
 
                     {/* Link */}

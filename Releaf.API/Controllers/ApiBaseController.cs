@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Releaf.API.DTOs;
 using Releaf.API.Exceptions;
 
 namespace Releaf.API.Controllers
@@ -22,6 +23,11 @@ namespace Releaf.API.Controllers
             {
                 _logger.LogWarning(ex, "Resource not found: {Message}", ex.Message);
                 return NotFound(ApiResponse<T>.Fail(ex.Message)); 
+            }
+            catch (AuthenticationException ex)
+            {
+                _logger.LogWarning(ex, "Authentication fail {Message}", ex.Message);
+                return Unauthorized(ApiResponse<T>.Fail(ex.Message));
             }
             catch (ArgumentException ex)
             {

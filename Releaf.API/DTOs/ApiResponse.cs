@@ -1,4 +1,4 @@
-﻿namespace Releaf.API.Controllers
+﻿namespace Releaf.API.DTOs
 {
     public class ApiResponse<T>
     {

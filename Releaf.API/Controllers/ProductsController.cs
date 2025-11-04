@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Releaf.API.DTOs;
 using Releaf.API.Exceptions;
 using Releaf.API.Interfaces;
@@ -44,6 +45,7 @@ namespace Releaf.API.Controllers
         }
 
         [HttpPost]
+        [Authorize(Roles = "Admin")]
         public  Task<IActionResult> AddNewProductAsync(CreateProductDto createProductDto)
         {
             return  ExecuteAsync(

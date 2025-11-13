@@ -13,17 +13,17 @@ namespace Releaf.API.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly ReleafDbContext _context;
         private readonly IConfiguration _config;
         private readonly IUserRepository _userRepo;
         private readonly IJwtService _jwtService;
+        private readonly IRoleRepository _roleRepo;
 
-        public AuthService(ReleafDbContext context, IUserRepository userRepo, IConfiguration config, IJwtService jwtService)
+        public AuthService(IUserRepository userRepo, IConfiguration config, IJwtService jwtService, IRoleRepository roleRepo)
         {
-            _context = context;
             _config = config;
             _userRepo = userRepo;
             _jwtService = jwtService;
+            _roleRepo = roleRepo;
         }
         public async Task RegisterAsync(RegisterRequest request)
         {
@@ -34,7 +34,7 @@ namespace Releaf.API.Services
 
             string hashedPassword = BCrypt.Net.BCrypt.HashPassword(request.Password);
 
-            var defaultRole = await _context.Roles.FirstOrDefaultAsync(r => r.RoleName == "Customer");
+            var defaultRole = await _roleRepo.GetRoleByNameAsync("Customer");
             if (defaultRole == null)
             {
                 throw new Exception("Default 'Customer' role not found.");
@@ -50,7 +50,7 @@ namespace Releaf.API.Services
             user.Roles.Add(defaultRole);
 
             await _userRepo.AddUserAsync(user);
-            await _context.SaveChangesAsync();
+            await _userRepo.SaveChangesAsync();
         }
         public async Task<TokenResponse> LoginAsync(LoginRequest request)
         {

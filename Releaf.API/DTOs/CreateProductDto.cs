@@ -16,6 +16,6 @@ namespace Releaf.API.DTOs
         public string Materials { get; set; } = string.Empty;
         public int CategoryId { get; set; }
         public int SupplierId { get; set; }
-        public List<string> ImageUrls { get; set; } = new List<string>();
+        public List<IFormFile> ImageFile { get; set; } = new List<IFormFile>();
     }
 }

@@ -45,8 +45,7 @@ namespace Releaf.API.Controllers
         }
 
         [HttpPost]
-        [Authorize(Roles = "Admin")]
-        public  Task<IActionResult> AddNewProductAsync(CreateProductDto createProductDto)
+        public  Task<IActionResult> AddNewProductAsync([FromForm] CreateProductDto createProductDto)
         {
             return  ExecuteAsync(
                  () =>  _productService.CreateProductAsync(createProductDto),

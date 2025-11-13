@@ -37,6 +37,8 @@ namespace Releaf.API
             builder.Services.AddScoped<IAuthService, AuthService>();
             builder.Services.AddScoped<IUserRepository, UserRepository>();
             builder.Services.AddScoped<IJwtService, JwtService>();
+            builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+            builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
             builder.Services.AddMemoryCache();
 
             builder.Services.AddCors(options =>
@@ -76,6 +78,8 @@ namespace Releaf.API
             }
 
             app.UseHttpsRedirection();
+
+            app.UseStaticFiles();
 
             app.UseCors("AllowFrontend");
 

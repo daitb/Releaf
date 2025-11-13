@@ -30,5 +30,10 @@ namespace Releaf.API.Repositories
         {
             return await _context.Users.AnyAsync(u => u.Email == email);
         }
+
+        public Task SaveChangesAsync()
+        {
+            return _context.SaveChangesAsync();
+        }
     }
 }

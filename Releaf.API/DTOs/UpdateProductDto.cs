@@ -11,6 +11,7 @@ namespace Releaf.API.DTOs
         public ProductStatus ProductStatus { get; set; }
         public int? SupplierId { get; set; }
         public int? CategoryId { get; set; }
-        public List<string> ImageUrls { get; set; } = new List<string>();
+        public List<IFormFile>? NewImageFiles { get; set; } = new List<IFormFile>();
+        public List<string>?  ExistingImageFiles { get; set; } = new List<string>();
     }
 }

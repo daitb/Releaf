@@ -138,7 +138,7 @@ public partial class ReleafDbContext : DbContext
             entity.Property(e => e.CreateAt).HasDefaultValueSql("(getdate())");
             entity.Property(e => e.Email).HasMaxLength(255);
             entity.Property(e => e.FullName).HasMaxLength(255);
-            entity.Property(e => e.PassWordHash).HasMaxLength(255);
+            entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.Phone).HasMaxLength(20);
 
             entity.HasMany(d => d.Roles).WithMany(p => p.Users)

@@ -12,15 +12,18 @@ namespace Releaf.API.Mapping
             CreateMap<Product, ProductDto>()
                 .ForMember(
                     dest => dest.CategoryName,
-                    opt => opt.MapFrom(src => src.Category.CategoryName)
+                    opt => opt.MapFrom(src => src.Category!.CategoryName)
                 )
                 .ForMember(
                     dest => dest.SupplierName,
-                    opt => opt.MapFrom(src => src.Supplier.NameSupplier)
+                    opt => opt.MapFrom(src => src.Supplier!.NameSupplier)
                 );
             CreateMap<ProductDto, Product>();
             CreateMap<Product, CreateProductDto>();
-            CreateMap<CreateProductDto, Product>();
+
+            CreateMap<CreateProductDto, Product>()
+            .ForMember(dest => dest.ProductImages, opt => opt.Ignore())
+            .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
         }
     }
 }

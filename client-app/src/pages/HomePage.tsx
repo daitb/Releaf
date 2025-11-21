@@ -38,7 +38,7 @@ export default function HomePage() {
     ]
 
     const [productList, setProductList] = useState<Product[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(true);
+    const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
@@ -72,7 +72,7 @@ export default function HomePage() {
         if (isLoading) {
             return (
                 <div className='flex justify-center'>
-                    <Loader2 className='w-12 h-12 animate-sprin text-green-500' />
+                    <Loader2 className='w-12 h-12 animate-spin text-green-500' />
                 </div>
             )
         }

@@ -37,6 +37,7 @@ namespace Releaf.API.Repositories
         {
             return await _context.Products
                 .Where(p => ids.Contains(p.ProductId))
+                .Include(p => p.ProductImages)
                 .Include(p => p.Category)
                 .Include(p => p.Supplier)
                 .ToListAsync();

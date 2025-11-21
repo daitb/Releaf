@@ -399,6 +399,20 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
+# .NET specific
+*.deps.json
+*.runtimeconfig.json
+*.runtimeconfig.dev.json
+
+# Copilot and VS extensions
+.vs/*/CopilotIndices/
+.vs/*/FileContentIndex/
+
+# Client-app (if React/TS)
+../client-app/node_modules/
+../client-app/dist/
+../client-app/build/
+
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 

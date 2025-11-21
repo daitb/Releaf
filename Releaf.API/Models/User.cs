@@ -15,11 +15,11 @@ public partial class User
 
     public string? Email { get; set; }
 
-    public string? PassWordHash { get; set; }
+    public string? PasswordHash { get; set; }
 
     public string? Phone { get; set; }
 
-    public DateTime? CreateAt { get; set; }
+    public DateTime? CreateAt { get; set; } = DateTime.UtcNow;
 
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();
 

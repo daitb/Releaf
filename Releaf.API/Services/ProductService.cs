@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using Microsoft.Extensions.Caching.Memory;
 using Releaf.API.DTOs;
+using Releaf.API.Exceptions;
 using Releaf.API.Interfaces;
 using Releaf.API.Models;
 
@@ -12,11 +13,13 @@ namespace Releaf.API.Services
         private readonly IOrderDetailRepository _orderDetailRepo;
         private readonly IMapper _mapper;
         private readonly IMemoryCache _cache;
-        public ProductService(IProductRepository repository, IMapper mapper, IMemoryCache cache, IOrderDetailRepository orderDetailRepository)
+        private readonly IFileStorageService _fileStorageService;
+        public ProductService(IProductRepository repository, IMapper mapper, IMemoryCache cache, IOrderDetailRepository orderDetailRepository, IFileStorageService fileStorageService)
         {
             _productRepo = repository;
             _mapper = mapper;
             _cache = cache;
+            _fileStorageService = fileStorageService;
             _orderDetailRepo = orderDetailRepository;
         }
 
@@ -39,46 +42,86 @@ namespace Releaf.API.Services
             productEntity.CreateAt = DateTime.Now;
 
             //Process logic add image
-            if(createProductDto.ImageUrls != null)
+            if (createProductDto.ImageFile != null && createProductDto.ImageFile.Any())
             {
-                foreach (var imgUrl in createProductDto.ImageUrls)
+                foreach (var imgFile in createProductDto.ImageFile)
                 {
+                    var imageUrl = await _fileStorageService.UploadFileAsync(imgFile, "product-images");
                     productEntity.ProductImages.Add(new ProductImage
                     {
-                        ImageUrl = imgUrl,
+                        ImageUrl = imageUrl,
                         IsPrimary = !productEntity.ProductImages.Any()
                     });
                 }
-            }        
+            }
 
             //EF automatically resognizes images and then insert them into ProductImages
             await _productRepo.AddAsync(productEntity);
             await _productRepo.SaveChangesAsync();
 
-            return _mapper.Map<ProductDto>(productEntity);
+            return (await GetProductByIdAsync(productEntity.ProductId))!;
         }
         public async Task<bool> UpdateProductAsync(int id, UpdateProductDto updateProductDto)
         {
             var product = await _productRepo.GetByIdAsync(id);
 
-            if(product == null)
+            if (product == null)
             {
-                return false;
+                throw new NotFoundException($"Product with id {id} not found.");
             }
-            product = _mapper.Map<Product>(updateProductDto);
+            _mapper.Map(updateProductDto, product);
 
-            if(updateProductDto.ImageUrls != null)
+            var oldImageUrls = product.ProductImages
+                                    .Select(img => img.ImageUrl)
+                                    .ToList();
+
+            product.ProductImages.Clear();
+
+            if(updateProductDto.ExistingImageFiles != null)
             {
-                foreach(var imgUrl in updateProductDto.ImageUrls)
+                foreach (var imgUrl in updateProductDto.ExistingImageFiles)
                 {
                     product.ProductImages.Add(new ProductImage
                     {
                         ImageUrl = imgUrl,
+                        IsPrimary = !product.ProductImages.Any()
                     });
                 }
             }
+
+            if(updateProductDto.NewImageFiles != null)
+            {
+                foreach(var imgFile in updateProductDto.NewImageFiles)
+                {
+                    var imgUrl = await _fileStorageService.UploadFileAsync(imgFile, "product-images");
+
+                    product.ProductImages.Add(new ProductImage
+                    {
+                        ImageUrl = imgUrl,
+                        IsPrimary = !product.ProductImages.Any()
+                    });
+                }
+            }
+
             _productRepo.Update(product);
-            return await _productRepo.SaveChangesAsync();
+
+            var success = await _productRepo.SaveChangesAsync();
+
+            if (success)
+            {
+                var newImgUrls = product.ProductImages
+                                        .Select(img => img.ImageUrl)
+                                        .ToList();
+
+                var imgToDelete = oldImageUrls.Except(newImgUrls);
+
+                foreach(var imgUrl in imgToDelete)
+                {
+                    _fileStorageService.DeleteFile(imgUrl);
+                }
+            }
+
+            return success;
         }
         public async Task<bool> DeleteProductAsync(int id)
         {
@@ -89,15 +132,30 @@ namespace Releaf.API.Services
                 return false;
             }
 
+            var imageUrls = product.ProductImages
+                                    .Select(img => img.ImageUrl)
+                                    .ToList();
+
             _productRepo.Delete(product);
-            return await _productRepo.SaveChangesAsync();
+
+            var success = await _productRepo.SaveChangesAsync();
+
+            if (success)
+            {
+                foreach(var imgUrl in imageUrls)
+                {
+                    _fileStorageService.DeleteFile(imgUrl);
+                }
+            }
+
+            return success;
         }
 
         public async Task<IEnumerable<ProductDto>> GetBestSellingProductAsync(int count)
         {
             string cacheKey = $"BestSellingProducts_{count}";
 
-            if(_cache.TryGetValue(cacheKey, out IEnumerable<ProductDto>? cachedProducts))
+            if (_cache.TryGetValue(cacheKey, out IEnumerable<ProductDto>? cachedProducts))
             {
                 return cachedProducts!;
             }
@@ -109,12 +167,10 @@ namespace Releaf.API.Services
                 return new List<ProductDto>();
             }
 
-            var topProducts = await _productRepo.GetByIdsAsync(topProductIds);
+            var topProducts = (await _productRepo.GetByIdsAsync(topProductIds))
+                            .OrderBy(p => topProductIds.IndexOf(p.ProductId));
 
-            var sortedProducts = topProducts
-                        .OrderBy(p => topProductIds.IndexOf(p.ProductId));
-
-            var productDtos = _mapper.Map<IEnumerable<ProductDto>>(sortedProducts);
+            var productDtos = _mapper.Map<IEnumerable<ProductDto>>(topProducts);
 
             var cacheEntryOptions = new MemoryCacheEntryOptions()
             .SetAbsoluteExpiration(TimeSpan.FromHours(6));

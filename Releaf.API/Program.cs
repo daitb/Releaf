@@ -1,7 +1,8 @@
 
-using AutoMapper;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Caching.Memory;
+using Microsoft.IdentityModel.Tokens;
 using Releaf.API.Data;
 using Releaf.API.Interfaces;
 using Releaf.API.Mapping;
@@ -15,15 +16,16 @@ namespace Releaf.API
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
+            var config = builder.Configuration;
 
             // Add services to the container.
             builder.Services.AddDbContext<ReleafDbContext>(options => 
-                    options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+                    options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
 
             builder.Services.AddControllers();
             builder.Services.AddAutoMapper(cfg =>
             {
-                cfg.LicenseKey = builder.Configuration.GetConnectionString("LicenseKey");
+                cfg.LicenseKey = config.GetConnectionString("LicenseKey");
             }, typeof(MappingProfile));
 
             builder.Services.AddEndpointsApiExplorer();
@@ -32,6 +34,11 @@ namespace Releaf.API
             builder.Services.AddScoped<IProductService, ProductService>();
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IOrderDetailRepository, OrderDetailRepository>();
+            builder.Services.AddScoped<IAuthService, AuthService>();
+            builder.Services.AddScoped<IUserRepository, UserRepository>();
+            builder.Services.AddScoped<IJwtService, JwtService>();
+            builder.Services.AddScoped<IRoleRepository, RoleRepository>();
+            builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
             builder.Services.AddMemoryCache();
 
             builder.Services.AddCors(options =>
@@ -44,6 +51,23 @@ namespace Releaf.API
                 });
             });
 
+            builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                .AddJwtBearer(options =>
+                {
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = config["Jwt:Issuer"],
+                        ValidAudience = config["Jwt:Audience"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(config["Jwt:Key"]!))
+                    };
+                });
+
+            builder.Services.AddAuthorization();
+
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
@@ -55,7 +79,11 @@ namespace Releaf.API
 
             app.UseHttpsRedirection();
 
+            app.UseStaticFiles();
+
             app.UseCors("AllowFrontend");
+
+            app.UseAuthentication();
 
             app.UseAuthorization();
 

@@ -1,5 +1,5 @@
-import { NavLink } from "react-router-dom";
-import { ShoppingCart, User} from "lucide-react";
+import { Link, NavLink } from "react-router-dom";
+import { ShoppingCart, User } from "lucide-react";
 import Logo from "../assets/logo.png";
 
 export default function Navbar() {
@@ -58,10 +58,12 @@ export default function Navbar() {
                             <User className="w-5 h-5" />
                         </button>
 
-                        <button className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700
-                        transition-colors font-medium">
+                        <Link
+                            to={"/auth"}
+                            className="px-5 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-medium"
+                        >
                             Sign In
-                        </button>
+                        </Link>
                     </div>
                 </div>
             </div>

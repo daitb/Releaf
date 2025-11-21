@@ -23,10 +23,16 @@ namespace Releaf.API.Services
             _orderDetailRepo = orderDetailRepository;
         }
 
-        public async Task<IEnumerable<ProductDto>> GetAllProductsAsync()
+        public async Task<PaginatedResult<ProductDto>> GetAllProductsAsync(string? q, int page, int pageSize, string? sort)
         {
-            var products = await _productRepo.GetAllAsync();
-            return _mapper.Map<IEnumerable<ProductDto>>(products);
+            var paginatedProducts = await _productRepo.GetAllAsync(q, page, pageSize, sort);
+            return new PaginatedResult<ProductDto>
+            {
+                Items = _mapper.Map<IEnumerable<ProductDto>>(paginatedProducts.Items),
+                TotalCount = paginatedProducts.TotalCount,
+                Page = paginatedProducts.Page,
+                PageSize = paginatedProducts.PageSize
+            };
         }
         public async Task<ProductDto?> GetProductByIdAsync(int id)
         {

@@ -4,6 +4,7 @@ import { api } from "../api/apiClient";
 import { FaFacebookF, FaGoogle } from "react-icons/fa";
 import toast, { Toaster } from 'react-hot-toast';
 import { Leaf } from "lucide-react";
+import { useAuth } from "../context/AuthContext";
 
 export default function AuthForm() {
     const navigate = useNavigate();
@@ -64,6 +65,8 @@ export default function AuthForm() {
         }
     };
 
+    const { login } = useAuth();
+
     const handleSignInSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setIsLoading(true);
@@ -75,7 +78,7 @@ export default function AuthForm() {
             });
 
             const token = response.data.data.accessToken;
-            localStorage.setItem("accessToken", token);
+            login(token);
             toast.success("Đăng nhập thành công!")
             navigate("/");
         }

@@ -7,6 +7,7 @@ import ProtectedRoute from "./ProtectedRoute";
 import { AuthProvider } from "../context/AuthContext";
 import NotFound from "../pages/NotFound";
 import React, { Suspense } from "react";
+import ProductList from "../pages/ProductList";
 
 const NO_LAYOUT_PATHS = ["/auth", "/404"]
 const HomePage = React.lazy(() => import("../pages/HomePage"));
@@ -38,6 +39,7 @@ function RoutesWithLayout() {
 
                     <Route path="/404" element={<NotFound />} />
                     <Route path="*" element={<Navigate to="/404" replace />} />
+                    <Route path="/products" element={<ProductList />} />
                 </Routes>
             </main>
 

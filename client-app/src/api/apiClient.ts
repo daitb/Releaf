@@ -11,7 +11,6 @@ api.interceptors.response.use(
 
         if(status == 401){
             console.warn("Unauthorized! Redirecting to login...");
-            window.location.href = "/login";
         }
         if(status == 403){
             console.warn("Forbidden! You don't have permission to access this resource.");

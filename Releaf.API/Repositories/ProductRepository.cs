@@ -1,6 +1,8 @@
 ﻿using System.Threading.Tasks;
+using Azure;
 using Microsoft.EntityFrameworkCore;
 using Releaf.API.Data;
+using Releaf.API.DTOs;
 using Releaf.API.Interfaces;
 using Releaf.API.Models;
 
@@ -15,15 +17,33 @@ namespace Releaf.API.Repositories
             _context = context;
         }
 
-        public async Task<IEnumerable<Product>> GetAllAsync()
+        public async Task<PaginatedResult<Product>> GetAllAsync(string? q, int page, int pageSize, string? sort)
         {
-            return await _context.Products
-                .AsNoTracking ()
+            var queryable = _context.Products.AsQueryable();
+
+            if (!string.IsNullOrWhiteSpace(q))
+            {
+                queryable = queryable.Where(p => p.ProductName!.Contains(q));
+            }
+
+            queryable = sort switch
+            {
+                "name_desc" => queryable.OrderByDescending(p => p.ProductName),
+                "price_asc" => queryable.OrderBy(p => p.Price),
+                "price_desc" => queryable.OrderByDescending(p => p.Price),
+                _ => queryable.OrderBy(p => p.ProductName),
+            };
+
+            var totalCount = await queryable.CountAsync();
+            var items = await queryable
                 .Include(p => p.Category)
                 .Include(p => p.Supplier)
                 .Include(p => p.ProductImages)
-                .Where(p => p.ProductStatus != ProductStatus.Discontinue)
+                .Skip((page - 1) * pageSize)
+                .Take(pageSize)
                 .ToListAsync();
+
+            return new PaginatedResult<Product> { Items = items, TotalCount = totalCount, Page = page, PageSize = pageSize };
         }
         public async Task<Product?> GetByIdAsync(int id)
         {

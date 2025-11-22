@@ -1,9 +1,9 @@
-import { api } from "../api/apiClient"
 import { useEffect, useState } from "react";
-import type { Product } from "../types/Product";
+import type { Product } from "@entities/product/model";
+import { fetchProducts as fetchProductsRequest } from "../services/productService";
 
 export const useProducts = (query?: string) => {
-    const [data, setData] = useState<Product[] | null>(null);
+    const [data, setData] = useState<Product[]>([]);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<Error | null>(null);
 
@@ -13,16 +13,11 @@ export const useProducts = (query?: string) => {
             setError(null);
 
             try {
-                const response = await api.get("/Products", {
-                    params: {q: query}
-                });
-
-                setData(response.data.data);
-            }
-            catch(err){
+                const products = await fetchProductsRequest({ q: query });
+                setData(products);
+            } catch(err){
                 setError(err as Error);
-            }
-            finally {
+            } finally {
                 setIsLoading(false);
             }
         }

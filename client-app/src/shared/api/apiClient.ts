@@ -1,10 +1,10 @@
-import axios  from "axios";
+import axios from "axios";
 
-export const api = axios.create({
+export const apiClient = axios.create({
     baseURL: import.meta.env.VITE_API_URL
 });
 
-api.interceptors.response.use(
+apiClient.interceptors.response.use(
     (res) => res,
     (err) => {
         const status = err.response?.status;
@@ -20,13 +20,13 @@ api.interceptors.response.use(
         }
         return Promise.reject(err);
     }
-)
+);
 
-api.interceptors.request.use((config) => {
+apiClient.interceptors.request.use((config) => {
     const token = localStorage.getItem("accessToken");
 
     if(token){
         config.headers.Authorization = `Bearer ${token}`;
     }
     return config;
-})
+});

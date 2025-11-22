@@ -1,9 +1,9 @@
 import { Link, NavLink } from "react-router-dom";
 import { LogOut, ShoppingCart, User, UserCircle } from "lucide-react";
-import Logo from "../assets/logo.png";
-import { useAuth } from "../context/AuthContext";
+import Logo from "@assets/Logo.png";
+import { useAuth } from "@features/auth/context/AuthContext";
 import { useEffect, useState } from "react";
-import { api } from "../api/apiClient";
+import { fetchCartCount } from "@features/cart/services/cartService";
 
 export default function Navbar() {
     const { isLoggedIn, user, logout } = useAuth();
@@ -17,12 +17,12 @@ export default function Navbar() {
             return;
         }
 
-        const fetchCartCount = async () => {
+        const loadCartCount = async () => {
             setIsLoaingCard(true);
 
             try {
-                const res = await api.get("/Cart/count");
-                setCartCount(res.data.data.count || 0);
+                const count = await fetchCartCount();
+                setCartCount(count);
             }
             catch (error) {
                 console.error("Error fatching cart count: ", error)
@@ -33,13 +33,13 @@ export default function Navbar() {
             }
         }
 
-        fetchCartCount();
+        void loadCartCount();
 
     }, [isLoggedIn]);
 
     const navLinks = [
         { name: "Home", path: "/" },
-        { name: "Product", path: "/Products" },
+        { name: "Product", path: "/products" },
     ]
 
     return (
@@ -132,7 +132,7 @@ export default function Navbar() {
                                 </button>
 
                                 <Link
-                                    to="/auth?mode=login"
+                                    to="/login"
                                     className="px-5 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 active:scale-95 font-medium"
                                 >
                                     Sign In

@@ -13,10 +13,10 @@ import {
     Truck
 } from 'lucide-react';
 import { useEffect, useMemo, useState } from 'react';
-import banner from '../assets/forest.jpg';
-import about from '../assets/about.png';
-import { api } from '../api/apiClient';
-import type { Product } from '../types/Product';
+import banner from '@assets/forest.jpg';
+import about from '@assets/about.png';
+import type { Product } from '@entities/product/model';
+import { fetchBestSellingProducts } from '@features/products/services/productService';
 
 export default function HomePage() {
     const highlights = useMemo(() => ([
@@ -102,25 +102,19 @@ export default function HomePage() {
             setError(null);
 
             try {
-                const response = await api.get("/Products/bestselling?count=4");
-
-                if (response.data && response.data.data) {
-                    setProductList(response.data.data);
-                }
+                const products = await fetchBestSellingProducts(4);
+                setProductList(products);
             }
             catch (err: any) {
-                if (err.response) {
-                    setError(err.response.data.message || "Đã có lỗi xảy ra khi tải sản phẩm.");
-                } else {
-                    setError("Đã xảy ra lỗi. Vui lòng thử lại.");
-                }
+                const message = err.response?.data?.message ?? "Đã xảy ra lỗi. Vui lòng thử lại.";
+                setError(message);
             }
             finally {
                 setIsLoading(false);
             }
         };
 
-        fetchBestSellingProduct();
+        void fetchBestSellingProduct();
     }, []);
 
     const renderProductShowcase = () => {

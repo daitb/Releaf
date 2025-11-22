@@ -1,5 +1,27 @@
-# Created by https://www.toptal.com/developers/gitignore/api/visualstudio
-# Edit at https://www.toptal.com/developers/gitignore?templates=visualstudio
+# Created by https://www.toptal.com/developers/gitignore/api/visualstudio,visualstudiocode
+# Edit at https://www.toptal.com/developers/gitignore?templates=visualstudio,visualstudiocode
+
+### VisualStudioCode ###
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+!.vscode/*.code-snippets
+
+### Static File
+/Releaf.API/wwwroot/
+
+# Local History for Visual Studio Code
+.history/
+
+# Built Visual Studio Code Extensions
+*.vsix
+
+### VisualStudioCode Patch ###
+# Ignore all local history of files
+.history
+.ionide
 
 ### VisualStudio ###
 ## Ignore Visual Studio temporary files, build results, and
@@ -379,15 +401,9 @@ MigrationBackup/
 FodyWeavers.xsd
 
 # VS Code files for those working on multiple tools
-.vscode/*
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
 *.code-workspace
 
 # Local History for Visual Studio Code
-.history/
 
 # Windows Installer files from build outputs
 *.cab
@@ -399,21 +415,7 @@ FodyWeavers.xsd
 # JetBrains Rider
 *.sln.iml
 
-# .NET specific
-*.deps.json
-*.runtimeconfig.json
-*.runtimeconfig.dev.json
-
-# Copilot and VS extensions
-.vs/*/CopilotIndices/
-.vs/*/FileContentIndex/
-
-# Client-app (if React/TS)
-../client-app/node_modules/
-../client-app/dist/
-../client-app/build/
-
 ### VisualStudio Patch ###
 # Additional files built by Visual Studio
 
-# End of https://www.toptal.com/developers/gitignore/api/visualstudio
+# End of https://www.toptal.com/developers/gitignore/api/visualstudio,visualstudiocode

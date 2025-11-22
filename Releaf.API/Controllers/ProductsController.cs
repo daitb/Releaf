@@ -12,43 +12,43 @@ namespace Releaf.API.Controllers
     {
         private readonly IProductService _productService;
 
-        public ProductsController(IProductService productService, ILogger<ProductsController> logger) : base(logger) 
+        public ProductsController(IProductService productService, ILogger<ProductsController> logger) : base(logger)
         {
             _productService = productService;
         }
 
         [HttpGet]
-        public  Task<IActionResult> GetAllProduct()
+        public Task<IActionResult> GetAllProduct([FromQuery] string? q = null, [FromQuery] int page = 1,[FromQuery] int pageSize = 10,[FromQuery] string? sort = "name_asc")                                    
         {
-            return  ExecuteAsync(
-                 () =>  _productService.GetAllProductsAsync(), 
+            return ExecuteAsync(
+                 () => _productService.GetAllProductsAsync(q, page, pageSize, sort),
                 "Get list product successfully"
             );
         }
 
         [HttpGet("{id}")]
-        public  Task<IActionResult> GetProductById(int id)
+        public Task<IActionResult> GetProductById(int id)
         {
-            return  ExecuteAsync(
+            return ExecuteAsync(
                  () =>
                 {
-                    var product =  _productService.GetProductByIdAsync(id);
+                    var product = _productService.GetProductByIdAsync(id);
                     if (product == null)
                     {
                         throw new NotFoundException($"No product found with ID = {id}");
                     }
 
                     return product;
-                }, 
+                },
                 "Get product successfully"
              );
         }
 
         [HttpPost]
-        public  Task<IActionResult> AddNewProductAsync([FromForm] CreateProductDto createProductDto)
+        public Task<IActionResult> AddNewProductAsync([FromForm] CreateProductDto createProductDto)
         {
-            return  ExecuteAsync(
-                 () =>  _productService.CreateProductAsync(createProductDto),
+            return ExecuteAsync(
+                 () => _productService.CreateProductAsync(createProductDto),
                 "Add new product successfully"
              );
         }
@@ -57,7 +57,7 @@ namespace Releaf.API.Controllers
         public Task<IActionResult> GetBestSellingProducts([FromQuery] int count = 4)
         {
             return ExecuteAsync(
-                 () =>  _productService.GetBestSellingProductAsync(count),
+                 () => _productService.GetBestSellingProductAsync(count),
                 $"Get top {count} best selling products successfully"
             );
         }

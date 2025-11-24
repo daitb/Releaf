@@ -32,7 +32,7 @@ export default function ProductListPage() {
     if (error) {
         return (
             <div className="mt-10">
-                <p className="text-center text-red-500">Error loading product: {error.message}</p>
+                <p className="text-center text-red-500">Lỗi tải sản phẩm: {error}</p>
             </div>
         );
     }

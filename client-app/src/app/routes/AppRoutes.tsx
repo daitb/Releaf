@@ -7,36 +7,39 @@ import LoginPage from "@features/auth/pages/LoginPage";
 import RegisterPage from "@features/auth/pages/RegisterPage";
 import ProductListPage from "@features/products/pages/ProductListPage";
 import NotFound from "@app/pages/NotFound";
+import { ErrorBoundary } from "@shared/components/ErrorBoundary";
 
 const HomePage = React.lazy(() => import("@features/home/pages/HomePage"));
 
 export default function AppRoutes() {
     return (
-        <BrowserRouter>
-            <AuthProvider>
-                <Routes>
-                    <Route element={<AppLayout />}>
-                        <Route
-                            path="/"
-                            element={(
-                                <Suspense fallback={<div className="text-center mt-6">Loading HomePage...</div>}>
-                                    <HomePage />
-                                </Suspense>
-                            )}
-                        />
-                        <Route path="/products" element={<ProductListPage />} />
+        <ErrorBoundary>
+            <BrowserRouter>
+                <AuthProvider>
+                    <Routes>
+                        <Route element={<AppLayout />}>
+                            <Route
+                                path="/"
+                                element={(
+                                    <Suspense fallback={<div className="text-center mt-6">Loading HomePage...</div>}>
+                                        <HomePage />
+                                    </Suspense>
+                                )}
+                            />
+                            <Route path="/products" element={<ProductListPage />} />
 
-                        <Route element={<ProtectedRoute />}>
-                            {/* Protected routes go here, e.g. dashboard */}
+                            <Route element={<ProtectedRoute />}>
+                                {/* Protected routes go here, e.g. dashboard */}
+                            </Route>
                         </Route>
-                    </Route>
 
-                    <Route path="/login" element={<LoginPage />} />
-                    <Route path="/register" element={<RegisterPage />} />
-                    <Route path="/404" element={<NotFound />} />
-                    <Route path="*" element={<Navigate to="/404" replace />} />
-                </Routes>
-            </AuthProvider>
-        </BrowserRouter>
+                        <Route path="/login" element={<LoginPage />} />
+                        <Route path="/register" element={<RegisterPage />} />
+                        <Route path="/404" element={<NotFound />} />
+                        <Route path="*" element={<Navigate to="/404" replace />} />
+                    </Routes>
+                </AuthProvider>
+            </BrowserRouter>
+        </ErrorBoundary>
     );
 }

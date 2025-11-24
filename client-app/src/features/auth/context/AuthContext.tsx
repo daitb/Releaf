@@ -27,6 +27,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
             setUser(profile);
             setIsLoggedIn(true);
         } catch (error) {
+            // 401 đã được xử lý bởi apiClient interceptor
             if (axios.isAxiosError(error) && error.response?.status === 401) {
                 logout();
             } else {

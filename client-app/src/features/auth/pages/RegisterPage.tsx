@@ -3,13 +3,14 @@ import { Link } from "react-router-dom";
 import { Leaf } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { register as registerRequest } from "@features/auth/services/authService";
+import { useAsyncError } from "@shared/hooks/useAsyncError";
 
 export default function RegisterPage() {
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const [isLoading, setIsLoading] = useState(false);
+    const { execute, isLoading } = useAsyncError();
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();
@@ -19,22 +20,21 @@ export default function RegisterPage() {
             return;
         }
 
-        setIsLoading(true);
-
-        try {
-            await registerRequest({ fullName, email, password, confirmPassword });
-            toast.success("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
-            setFullName("");
-            setEmail("");
-            setPassword("");
-            setConfirmPassword("");
-        }
-        catch (error: any) {
-            toast.error(error.response?.data?.message || "Đăng ký thất bại, vui lòng thử lại.");
-        }
-        finally {
-            setIsLoading(false);
-        }
+        await execute(
+            () => registerRequest({ fullName, email, password, confirmPassword }),
+            {
+                onSuccess: () => {
+                    toast.success("Đăng ký thành công! Bạn có thể đăng nhập ngay bây giờ.");
+                    setFullName("");
+                    setEmail("");
+                    setPassword("");
+                    setConfirmPassword("");
+                },
+                onError: (errorMessage) => {
+                    toast.error(errorMessage);
+                }
+            }
+        );
     };
 
     const commonInput = "w-full border border-gray-300 rounded-xl py-3 px-4 text-sm transition focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent";

@@ -1,29 +1,14 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import type { Product } from "@entities/product/model";
 import { fetchProducts as fetchProductsRequest } from "../services/productService";
+import { useAsync } from "@shared/hooks/useAsync";
 
 export const useProducts = (query?: string) => {
-    const [data, setData] = useState<Product[]>([]);
-    const [isLoading, setIsLoading] = useState<boolean>(false);
-    const [error, setError] = useState<Error | null>(null);
+    const { data = [], isLoading, error, execute } = useAsync<Product[]>();
 
     useEffect(() => {
-        const fetchProducts = async () => {
-            setIsLoading(true);
-            setError(null);
-
-            try {
-                const products = await fetchProductsRequest({ q: query });
-                setData(products);
-            } catch(err){
-                setError(err as Error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-
-        fetchProducts();
-    }, [query]);
+        void execute(() => fetchProductsRequest({ q: query }));
+    }, [query, execute]);
 
     return { data, isLoading, error };
 };

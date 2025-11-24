@@ -1,32 +1,65 @@
-import axios from "axios";
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
+import type { ApiErrorResponse } from "../utils/errorUtils";
 
 export const apiClient = axios.create({
-    baseURL: import.meta.env.VITE_API_URL
+    baseURL: import.meta.env.VITE_API_URL,
+    headers: {
+        "Content-Type": "application/json"
+    }
 });
 
-apiClient.interceptors.response.use(
-    (res) => res,
-    (err) => {
-        const status = err.response?.status;
+// Request interceptor: Thêm token vào header
+apiClient.interceptors.request.use(
+    (config: InternalAxiosRequestConfig) => {
+        const token = localStorage.getItem("accessToken");
 
-        if(status == 401){
-            console.warn("Unauthorized! Redirecting to login...");
+        if (token && config.headers) {
+            config.headers.Authorization = `Bearer ${token}`;
         }
-        if(status == 403){
-            console.warn("Forbidden! You don't have permission to access this resource.");
-        }
-        if(status >= 500){
-            console.error("Server error! Please try again later.", err.response?.data.message, err.message);
-        }
-        return Promise.reject(err);
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
     }
 );
 
-apiClient.interceptors.request.use((config) => {
-    const token = localStorage.getItem("accessToken");
+// Response interceptor: Xử lý lỗi và redirect
+apiClient.interceptors.response.use(
+    (res) => res,
+    (err: AxiosError<ApiErrorResponse>) => {
+        const status = err.response?.status;
 
-    if(token){
-        config.headers.Authorization = `Bearer ${token}`;
+        // 401 Unauthorized: Xóa token và redirect về login
+        if (status === 401) {
+            localStorage.removeItem("accessToken");
+            localStorage.removeItem("refreshToken");
+            
+            // Chỉ redirect nếu không đang ở trang login/register
+            if (!window.location.pathname.includes("/login") && 
+                !window.location.pathname.includes("/register")) {
+                window.location.href = "/login";
+            }
+        }
+
+        // 403 Forbidden: Log warning
+        if (status === 403) {
+            console.warn("Forbidden! You don't have permission to access this resource.");
+        }
+
+        // 500+ Server errors: Log error
+        if (status && status >= 500) {
+            console.error("Server error:", {
+                status,
+                message: err.response?.data?.message || err.message,
+                url: err.config?.url
+            });
+        }
+
+        // Network errors: Log warning
+        if (!err.response) {
+            console.error("Network error:", err.message);
+        }
+
+        return Promise.reject(err);
     }
-    return config;
-});
+);

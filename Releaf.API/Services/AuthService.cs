@@ -1,9 +1,7 @@
-﻿using System.IdentityModel.Tokens.Jwt;
+﻿using AutoMapper;
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
-using System.Text;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Releaf.API.Data;
+using Microsoft.AspNetCore.Http;
 using Releaf.API.DTOs;
 using Releaf.API.Exceptions;
 using Releaf.API.Interfaces;
@@ -17,13 +15,17 @@ namespace Releaf.API.Services
         private readonly IUserRepository _userRepo;
         private readonly IJwtService _jwtService;
         private readonly IRoleRepository _roleRepo;
+        private readonly IHttpContextAccessor _httpContextAccessor;
+        private readonly IMapper _mapper;
 
-        public AuthService(IUserRepository userRepo, IConfiguration config, IJwtService jwtService, IRoleRepository roleRepo)
+        public AuthService(IUserRepository userRepo, IConfiguration config, IJwtService jwtService, IRoleRepository roleRepo, IHttpContextAccessor httpContextAccessor, IMapper mapper)
         {
             _config = config;
             _userRepo = userRepo;
             _jwtService = jwtService;
             _roleRepo = roleRepo;
+            _httpContextAccessor = httpContextAccessor;
+            _mapper = mapper;
         }
         public async Task RegisterAsync(RegisterRequest request)
         {
@@ -61,12 +63,35 @@ namespace Releaf.API.Services
                 throw new AuthenticationException("Invalid email or password"); // Dùng custom exception
             }
 
-            var token = _jwtService.CreateJwtToken(user);
+            var accessToken = _jwtService.CreateJwtToken(user);
 
             return new TokenResponse
             {
-                AccessToken = token
+                AccessToken = accessToken
             };
-        }       
+        }
+
+        public async Task<CurrentUserDto> GetCurrentUserAsync()
+        {
+            var httpContext = _httpContextAccessor.HttpContext;
+            var userIdClaim = httpContext?.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ??
+                            httpContext?.User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+
+            if(string.IsNullOrWhiteSpace(userIdClaim)){
+                throw new AuthenticationException("User is not authenticated");
+            }
+            
+            if(!int.TryParse(userIdClaim, out var userId)){
+                throw new AuthenticationException("Invalid user identifier");
+            }
+
+            var user =await _userRepo.GetUserByIdAsync(userId);
+
+            if(user == null){
+                throw new NotFoundException("User not found");
+            }
+
+            return _mapper.Map<CurrentUserDto>(user);
+        }    
     }
 }

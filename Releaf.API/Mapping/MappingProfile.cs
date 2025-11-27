@@ -22,8 +22,17 @@ namespace Releaf.API.Mapping
             CreateMap<Product, CreateProductDto>();
 
             CreateMap<CreateProductDto, Product>()
-            .ForMember(dest => dest.ProductImages, opt => opt.Ignore())
+            .ForMember(
+                dest => dest.ProductImages, 
+                opt => opt.Ignore()
+            )
             .ForAllMembers(opts => opts.Condition((src, dest, srcMember) => srcMember != null));
+        
+            CreateMap<User, CurrentUserDto>()
+            .ForMember(
+                dest => dest.Role, 
+                opt => opt.MapFrom(src => src.Roles.Select(r => r.RoleName).FirstOrDefault())
+            );
         }
     }
 }

@@ -1,5 +1,6 @@
 import { ArrowRight, Loader2, ShieldCheck } from 'lucide-react';
 import type { Product } from '@entities/product/model';
+import { Link } from 'react-router-dom';
 
 interface ProductsSectionProps {
     productList: Product[];
@@ -68,10 +69,10 @@ export default function ProductsSection({ productList, isLoading, error }: Produ
                             Dữ liệu cập nhật theo thời gian thực từ hành trình mua sắm của cộng đồng Releaf.
                         </p>
                     </div>
-                    <button className='inline-flex items-center gap-2 text-green-700 font-semibold'>
+                    <Link to="/products" className='inline-flex items-center gap-2 text-green-700 font-semibold hover:text-green-800 transition'>
                         Xem tất cả sản phẩm
                         <ArrowRight className='w-4 h-4' />
-                    </button>
+                    </Link>
                 </div>
                 {renderProductShowcase()}
             </div>

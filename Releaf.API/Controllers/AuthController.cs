@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Releaf.API.DTOs;
 using Releaf.API.Interfaces;
 
@@ -31,8 +32,17 @@ namespace Releaf.API.Controllers
         public Task<IActionResult> Login(LoginRequest request)
         {
             return ExecuteAsync(
-                () => _authService.LoginAsync(request),
+                async () => await _authService.LoginAsync(request),
                 "User login successfully");
+        }
+
+        [Authorize]
+        [HttpGet("me")]
+        public Task<IActionResult> GetCurrentUser()
+        {
+            return ExecuteAsync(
+                async () => await _authService.GetCurrentUserAsync(),
+                "Get current user successfully");
         }
     }
 }

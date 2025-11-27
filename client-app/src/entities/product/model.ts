@@ -6,5 +6,11 @@ export interface Product {
   materials: string;
   categoryName: string;
   supplierName: string;
-  imageUrl?: string; // optional nếu chưa có trong backend
+  imageUrl?: string;
+  images?: string[];
+  stockQuantity?: number;
+  rating?: number;
+  reviewCount?: number;
+  publishAt?: string;
+  productStatus?: 'Available' | 'Unavailable' | 'Discontinue';
 }

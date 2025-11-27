@@ -6,5 +6,6 @@ namespace Releaf.API.Interfaces
     {
         Task RegisterAsync(RegisterRequest request);
         Task<TokenResponse> LoginAsync(LoginRequest request);
+        Task<CurrentUserDto> GetCurrentUserAsync();
     }
 }

@@ -5,6 +5,7 @@ namespace Releaf.API.Interfaces
     public interface IUserRepository
     {
         Task<User?> GetUserByEmailAsync(string email);
+        Task<User?> GetUserByIdAsync(int userId);
         Task<bool> UserExistsAsync(string email);
         Task AddUserAsync(User user);
         Task SaveChangesAsync();

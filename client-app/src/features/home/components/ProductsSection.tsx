@@ -1,5 +1,5 @@
 import { ArrowRight, Loader2, ShieldCheck } from 'lucide-react';
-import type { Product } from '@entities/product/model';
+import type { Product } from '@features/products/types/product';
 import { Link } from 'react-router-dom';
 
 interface ProductsSectionProps {

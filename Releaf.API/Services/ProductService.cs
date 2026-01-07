@@ -7,6 +7,14 @@ using Releaf.API.Models;
 
 namespace Releaf.API.Services
 {
+    /// <summary>
+    /// Product service implementation using exception-based error handling.
+    /// 
+    /// FRESHER/JUNIOR APPROACH:
+    /// - Throws exceptions for error cases (NotFoundException, etc.)
+    /// - Easy to understand and common in most .NET projects
+    /// - Exception Middleware will catch and format errors
+    /// </summary>
     public class ProductService : IProductService
     {
         private readonly IProductRepository _productRepo;
@@ -14,7 +22,13 @@ namespace Releaf.API.Services
         private readonly IMapper _mapper;
         private readonly IMemoryCache _cache;
         private readonly IFileStorageService _fileStorageService;
-        public ProductService(IProductRepository repository, IMapper mapper, IMemoryCache cache, IOrderDetailRepository orderDetailRepository, IFileStorageService fileStorageService)
+
+        public ProductService(
+            IProductRepository repository,
+            IMapper mapper,
+            IMemoryCache cache,
+            IOrderDetailRepository orderDetailRepository,
+            IFileStorageService fileStorageService)
         {
             _productRepo = repository;
             _mapper = mapper;
@@ -23,6 +37,9 @@ namespace Releaf.API.Services
             _orderDetailRepo = orderDetailRepository;
         }
 
+        /// <summary>
+        /// Get all products with pagination. Always succeeds.
+        /// </summary>
         public async Task<PaginatedResult<ProductDto>> GetAllProductsAsync(string? q, int page, int pageSize, string? sort)
         {
             var paginatedProducts = await _productRepo.GetAllAsync(q, page, pageSize, sort);
@@ -34,20 +51,35 @@ namespace Releaf.API.Services
                 PageSize = paginatedProducts.PageSize
             };
         }
-        public async Task<ProductDto?> GetProductByIdAsync(int id)
+
+        /// <summary>
+        /// Get product by ID. Throws NotFoundException if not found.
+        /// </summary>
+        public async Task<ProductDto> GetProductByIdAsync(int id)
         {
             var product = await _productRepo.GetByIdAsync(id);
-            return _mapper.Map<ProductDto?>(product);
+
+            if (product is null)
+            {
+                throw new NotFoundException($"Product with ID {id} was not found.");
+            }
+
+            return _mapper.Map<ProductDto>(product);
         }
+
+        /// <summary>
+        /// Create a new product.
+        /// Validation is handled automatically by FluentValidation.
+        /// </summary>
         public async Task<ProductDto> CreateProductAsync(CreateProductDto createProductDto)
         {
-            //Map createProductDto to ProductDto
-            var productEntity = _mapper.Map<Product>(createProductDto);
+            // Validation is handled by FluentValidation via ValidationActionFilter
+            // No need for manual checks here
 
-            //Set default time for CreateAt attribute
+            var productEntity = _mapper.Map<Product>(createProductDto);
             productEntity.CreateAt = DateTime.Now;
 
-            //Process logic add image
+            // Process image uploads
             if (createProductDto.ImageFile != null && createProductDto.ImageFile.Any())
             {
                 foreach (var imgFile in createProductDto.ImageFile)
@@ -61,29 +93,35 @@ namespace Releaf.API.Services
                 }
             }
 
-            //EF automatically resognizes images and then insert them into ProductImages
             await _productRepo.AddAsync(productEntity);
             await _productRepo.SaveChangesAsync();
 
-            return (await GetProductByIdAsync(productEntity.ProductId))!;
+            // Return the created product
+            return await GetProductByIdAsync(productEntity.ProductId);
         }
+
+        /// <summary>
+        /// Update existing product. Throws NotFoundException if not found.
+        /// </summary>
         public async Task<bool> UpdateProductAsync(int id, UpdateProductDto updateProductDto)
         {
             var product = await _productRepo.GetByIdAsync(id);
 
-            if (product == null)
+            if (product is null)
             {
-                throw new NotFoundException($"Product with id {id} not found.");
+                throw new NotFoundException($"Product with ID {id} was not found.");
             }
+
             _mapper.Map(updateProductDto, product);
 
             var oldImageUrls = product.ProductImages
-                                    .Select(img => img.ImageUrl)
-                                    .ToList();
+                .Select(img => img.ImageUrl)
+                .ToList();
 
             product.ProductImages.Clear();
 
-            if(updateProductDto.ExistingImageFiles != null)
+            // Re-add existing images that user wants to keep
+            if (updateProductDto.ExistingImageFiles != null)
             {
                 foreach (var imgUrl in updateProductDto.ExistingImageFiles)
                 {
@@ -95,12 +133,12 @@ namespace Releaf.API.Services
                 }
             }
 
-            if(updateProductDto.NewImageFiles != null)
+            // Upload and add new images
+            if (updateProductDto.NewImageFiles != null)
             {
-                foreach(var imgFile in updateProductDto.NewImageFiles)
+                foreach (var imgFile in updateProductDto.NewImageFiles)
                 {
                     var imgUrl = await _fileStorageService.UploadFileAsync(imgFile, "product-images");
-
                     product.ProductImages.Add(new ProductImage
                     {
                         ImageUrl = imgUrl,
@@ -110,18 +148,17 @@ namespace Releaf.API.Services
             }
 
             _productRepo.Update(product);
-
             var success = await _productRepo.SaveChangesAsync();
 
             if (success)
             {
+                // Clean up orphaned images
                 var newImgUrls = product.ProductImages
-                                        .Select(img => img.ImageUrl)
-                                        .ToList();
+                    .Select(img => img.ImageUrl)
+                    .ToList();
 
-                var imgToDelete = oldImageUrls.Except(newImgUrls);
-
-                foreach(var imgUrl in imgToDelete)
+                var imgToDelete = oldImageUrls.Except(newImgUrls!);
+                foreach (var imgUrl in imgToDelete)
                 {
                     _fileStorageService.DeleteFile(imgUrl);
                 }
@@ -129,26 +166,30 @@ namespace Releaf.API.Services
 
             return success;
         }
+
+        /// <summary>
+        /// Soft-delete a product. Throws NotFoundException if not found.
+        /// </summary>
         public async Task<bool> DeleteProductAsync(int id)
         {
             var product = await _productRepo.GetByIdAsync(id);
 
-            if (product == null)
+            if (product is null)
             {
-                return false;
+                throw new NotFoundException($"Product with ID {id} was not found.");
             }
 
             var imageUrls = product.ProductImages
-                                    .Select(img => img.ImageUrl)
-                                    .ToList();
+                .Select(img => img.ImageUrl)
+                .ToList();
 
             _productRepo.Delete(product);
-
             var success = await _productRepo.SaveChangesAsync();
 
             if (success)
             {
-                foreach(var imgUrl in imageUrls)
+                // Clean up images after successful delete
+                foreach (var imgUrl in imageUrls)
                 {
                     _fileStorageService.DeleteFile(imgUrl);
                 }
@@ -157,6 +198,10 @@ namespace Releaf.API.Services
             return success;
         }
 
+        /// <summary>
+        /// Get best selling products (cached for 6 hours).
+        /// Always succeeds - returns empty list if no data.
+        /// </summary>
         public async Task<IEnumerable<ProductDto>> GetBestSellingProductAsync(int count)
         {
             string cacheKey = $"BestSellingProducts_{count}";
@@ -174,12 +219,12 @@ namespace Releaf.API.Services
             }
 
             var topProducts = (await _productRepo.GetByIdsAsync(topProductIds))
-                            .OrderBy(p => topProductIds.IndexOf(p.ProductId));
+                .OrderBy(p => topProductIds.IndexOf(p.ProductId));
 
             var productDtos = _mapper.Map<IEnumerable<ProductDto>>(topProducts);
 
             var cacheEntryOptions = new MemoryCacheEntryOptions()
-            .SetAbsoluteExpiration(TimeSpan.FromHours(6));
+                .SetAbsoluteExpiration(TimeSpan.FromHours(6));
 
             _cache.Set(cacheKey, productDtos, cacheEntryOptions);
 

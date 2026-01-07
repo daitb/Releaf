@@ -2,6 +2,15 @@ import axios, { type AxiosError } from "axios";
 
 /**
  * Interface cho error response từ API
+ * 
+ * @example
+ * ```typescript
+ * interface ApiErrorResponse {
+ *   success: false,
+ *   message: "Email already exists",
+ *   data: null
+ * }
+ * ```
  */
 export interface ApiErrorResponse {
     success: boolean;
@@ -10,8 +19,26 @@ export interface ApiErrorResponse {
 }
 
 /**
- * Extract error message từ error object
- * Hỗ trợ nhiều loại error: AxiosError, Error, string, unknown
+ * Trích xuất error message từ nhiều loại error khác nhau
+ * 
+ * Hỗ trợ:
+ * - String: Trả về trực tiếp
+ * - AxiosError: Trích xuất từ response.data.message hoặc statusText
+ * - Error object: Lấy error.message
+ * - Unknown: Trả về default message
+ * 
+ * @param error - Error object cần xử lý (có thể là bất kỳ kiểu gì)
+ * @returns Error message dạng string để hiển thị cho user
+ * 
+ * @example
+ * ```typescript
+ * try {
+ *   await apiClient.post('/login', data);
+ * } catch (error) {
+ *   const message = getErrorMessage(error);
+ *   toast.error(message); // "Email hoặc mật khẩu không đúng"
+ * }
+ * ```
  */
 export function getErrorMessage(error: unknown): string {
     // Nếu là string, trả về trực tiếp
@@ -19,10 +46,10 @@ export function getErrorMessage(error: unknown): string {
         return error;
     }
 
-    // Nếu là AxiosError
+    // Nếu là AxiosError (lỗi từ API)
     if (axios.isAxiosError(error)) {
         const axiosError = error as AxiosError<ApiErrorResponse>;
-        
+
         // Ưu tiên message từ response.data.message
         if (axiosError.response?.data?.message) {
             return axiosError.response.data.message;
@@ -44,54 +71,11 @@ export function getErrorMessage(error: unknown): string {
         }
     }
 
-    // Nếu là Error object
+    // Nếu là Error object thông thường
     if (error instanceof Error) {
         return error.message;
     }
 
-    // Default message
+    // Default message khi không xác định được error type
     return "Đã xảy ra lỗi. Vui lòng thử lại.";
 }
-
-/**
- * Kiểm tra xem error có phải là network error không
- */
-export function isNetworkError(error: unknown): boolean {
-    if (axios.isAxiosError(error)) {
-        return !error.response; // Không có response = network error
-    }
-    return false;
-}
-
-/**
- * Kiểm tra xem error có phải là server error (5xx) không
- */
-export function isServerError(error: unknown): boolean {
-    if (axios.isAxiosError(error)) {
-        const status = error.response?.status;
-        return status !== undefined && status >= 500 && status < 600;
-    }
-    return false;
-}
-
-/**
- * Kiểm tra xem error có phải là client error (4xx) không
- */
-export function isClientError(error: unknown): boolean {
-    if (axios.isAxiosError(error)) {
-        const status = error.response?.status;
-        return status !== undefined && status >= 400 && status < 500;
-    }
-    return false;
-}
-
-/**
- * Lấy HTTP status code từ error
- */
-export function getErrorStatus(error: unknown): number | null {
-    if (axios.isAxiosError(error)) {
-        return error.response?.status ?? null;
-    }
-    return null;
-}
-

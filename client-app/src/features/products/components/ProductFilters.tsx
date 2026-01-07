@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { ChevronDown, ChevronUp, X, Filter } from 'lucide-react';
 
 export interface FilterOptions {
   categories?: string[];
@@ -18,14 +17,6 @@ export default function ProductFilters({ onFilterChange, isOpen = true }: Produc
   const [priceRange, setPriceRange] = useState({ min: 0, max: 10000000 });
   const [selectedMaterials, setSelectedMaterials] = useState<string[]>([]);
   const [selectedStatus, setSelectedStatus] = useState<string>('');
-
-  // Collapsible sections state
-  const [expandedSections, setExpandedSections] = useState({
-    categories: true,
-    priceRange: true,
-    materials: true,
-    status: true
-  });
 
   // Mock data - replace with API call in production
   const categories = [
@@ -53,13 +44,6 @@ export default function ProductFilters({ onFilterChange, isOpen = true }: Produc
     { label: '500.000đ - 1.000.000đ', min: 500000, max: 1000000 },
     { label: 'Trên 1.000.000đ', min: 1000000, max: 10000000 }
   ];
-
-  const toggleSection = (section: keyof typeof expandedSections) => {
-    setExpandedSections(prev => ({
-      ...prev,
-      [section]: !prev[section]
-    }));
-  };
 
   const handleCategoryToggle = (category: string) => {
     const updated = selectedCategories.includes(category)
@@ -109,295 +93,166 @@ export default function ProductFilters({ onFilterChange, isOpen = true }: Produc
     });
   };
 
-  const hasActiveFilters = selectedCategories.length > 0 ||
-    selectedMaterials.length > 0 ||
+  const hasActiveFilters = selectedCategories.length > 0 || 
+    selectedMaterials.length > 0 || 
     selectedStatus !== '' ||
     (priceRange.min > 0 || priceRange.max < 10000000);
 
-  const activeFilterCount = selectedCategories.length + selectedMaterials.length +
-    (selectedStatus ? 1 : 0) + ((priceRange.min > 0 || priceRange.max < 10000000) ? 1 : 0);
-
   return (
-    <div className={`bg-white rounded-2xl shadow-lg overflow-hidden transition-all duration-500 border border-gray-100 ${isOpen ? 'block' : 'hidden lg:block'}`}>
+    <div className={`bg-white rounded-xl shadow-sm overflow-hidden transition-all ${isOpen ? 'block' : 'hidden lg:block'}`}>
       {/* Filter Header */}
-      <div className="bg-gradient-to-r from-green-500 to-emerald-500 p-6">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
-              <Filter className="w-5 h-5 text-white" />
-            </div>
-            <div>
-              <h3 className="font-bold text-white text-lg">Bộ lọc</h3>
-              {activeFilterCount > 0 && (
-                <p className="text-green-50 text-sm">{activeFilterCount} bộ lọc đang áp dụng</p>
-              )}
-            </div>
-          </div>
-          {hasActiveFilters && (
-            <button
-              onClick={handleReset}
-              className="flex items-center gap-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-sm text-white rounded-xl font-medium transition-all duration-300 hover:scale-105"
-            >
-              <X className="w-4 h-4" />
-              <span className="hidden sm:inline">Xóa tất cả</span>
-            </button>
-          )}
+      <div className="flex items-center justify-between p-6 border-b">
+        <div className="flex items-center gap-2">
+          <svg className="w-5 h-5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <h3 className="font-semibold text-gray-900">Bộ lọc</h3>
         </div>
+        {hasActiveFilters && (
+          <button
+            onClick={handleReset}
+            className="text-sm text-red-600 hover:text-red-700 font-medium transition"
+          >
+            Xóa bộ lọc
+          </button>
+        )}
       </div>
 
-      <div className="max-h-[calc(100vh-300px)] overflow-y-auto">
+      <div className="p-6 space-y-6 max-h-[calc(100vh-300px)] overflow-y-auto">
         {/* Category Filter */}
-        <div className="border-b border-gray-100">
-          <button
-            onClick={() => toggleSection('categories')}
-            className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors duration-300"
-          >
-            <div className="flex items-center gap-2">
-              <h4 className="font-semibold text-gray-900">Danh mục</h4>
-              {selectedCategories.length > 0 && (
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">
-                  {selectedCategories.length}
+        <div>
+          <h4 className="font-semibold text-gray-900 mb-3">Danh mục</h4>
+          <div className="space-y-2">
+            {categories.map(category => (
+              <label key={category} className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={selectedCategories.includes(category)}
+                  onChange={() => handleCategoryToggle(category)}
+                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                />
+                <span className="text-gray-700 group-hover:text-green-600 transition">
+                  {category}
                 </span>
-              )}
-            </div>
-            {expandedSections.categories ? (
-              <ChevronUp className="w-5 h-5 text-gray-500" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-gray-500" />
-            )}
-          </button>
-          <div
-            className={`overflow-hidden transition-all duration-500 ${expandedSections.categories ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-              }`}
-          >
-            <div className="px-5 pb-5 space-y-3">
-              {categories.map(category => (
-                <label
-                  key={category}
-                  className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-green-50 transition-colors duration-300"
-                >
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      checked={selectedCategories.includes(category)}
-                      onChange={() => handleCategoryToggle(category)}
-                      className="w-5 h-5 text-green-600 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all cursor-pointer"
-                    />
-                  </div>
-                  <span className="text-gray-700 group-hover:text-green-600 transition-colors font-medium">
-                    {category}
-                  </span>
-                </label>
-              ))}
-            </div>
+              </label>
+            ))}
           </div>
         </div>
 
         {/* Price Range Filter */}
-        <div className="border-b border-gray-100">
-          <button
-            onClick={() => toggleSection('priceRange')}
-            className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors duration-300"
-          >
-            <div className="flex items-center gap-2">
-              <h4 className="font-semibold text-gray-900">Khoảng giá</h4>
-              {(priceRange.min > 0 || priceRange.max < 10000000) && (
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">
-                  1
+        <div className="border-t pt-6">
+          <h4 className="font-semibold text-gray-900 mb-3">Khoảng giá</h4>
+          <div className="space-y-2">
+            {priceRanges.map((range, index) => (
+              <label key={index} className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="radio"
+                  name="priceRange"
+                  checked={priceRange.min === range.min && priceRange.max === range.max}
+                  onChange={() => handlePriceRangeChange(range.min, range.max)}
+                  className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+                />
+                <span className="text-gray-700 group-hover:text-green-600 transition">
+                  {range.label}
                 </span>
-              )}
-            </div>
-            {expandedSections.priceRange ? (
-              <ChevronUp className="w-5 h-5 text-gray-500" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-gray-500" />
-            )}
-          </button>
-          <div
-            className={`overflow-hidden transition-all duration-500 ${expandedSections.priceRange ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-              }`}
-          >
-            <div className="px-5 pb-5 space-y-3">
-              {priceRanges.map((range, index) => (
-                <label
-                  key={index}
-                  className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-green-50 transition-colors duration-300"
-                >
-                  <div className="relative">
-                    <input
-                      type="radio"
-                      name="priceRange"
-                      checked={priceRange.min === range.min && priceRange.max === range.max}
-                      onChange={() => handlePriceRangeChange(range.min, range.max)}
-                      className="w-5 h-5 text-green-600 border-2 border-gray-300 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all cursor-pointer"
-                    />
-                  </div>
-                  <span className="text-gray-700 group-hover:text-green-600 transition-colors font-medium">
-                    {range.label}
-                  </span>
-                </label>
-              ))}
-            </div>
+              </label>
+            ))}
           </div>
         </div>
 
         {/* Material Filter */}
-        <div className="border-b border-gray-100">
-          <button
-            onClick={() => toggleSection('materials')}
-            className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors duration-300"
-          >
-            <div className="flex items-center gap-2">
-              <h4 className="font-semibold text-gray-900">Chất liệu</h4>
-              {selectedMaterials.length > 0 && (
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">
-                  {selectedMaterials.length}
+        <div className="border-t pt-6">
+          <h4 className="font-semibold text-gray-900 mb-3">Chất liệu</h4>
+          <div className="space-y-2">
+            {materials.map(material => (
+              <label key={material} className="flex items-center gap-2 cursor-pointer group">
+                <input
+                  type="checkbox"
+                  checked={selectedMaterials.includes(material)}
+                  onChange={() => handleMaterialToggle(material)}
+                  className="w-4 h-4 text-green-600 border-gray-300 rounded focus:ring-green-500"
+                />
+                <span className="text-gray-700 group-hover:text-green-600 transition">
+                  {material}
                 </span>
-              )}
-            </div>
-            {expandedSections.materials ? (
-              <ChevronUp className="w-5 h-5 text-gray-500" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-gray-500" />
-            )}
-          </button>
-          <div
-            className={`overflow-hidden transition-all duration-500 ${expandedSections.materials ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-              }`}
-          >
-            <div className="px-5 pb-5 space-y-3">
-              {materials.map(material => (
-                <label
-                  key={material}
-                  className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-green-50 transition-colors duration-300"
-                >
-                  <div className="relative">
-                    <input
-                      type="checkbox"
-                      checked={selectedMaterials.includes(material)}
-                      onChange={() => handleMaterialToggle(material)}
-                      className="w-5 h-5 text-green-600 border-2 border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all cursor-pointer"
-                    />
-                  </div>
-                  <span className="text-gray-700 group-hover:text-green-600 transition-colors font-medium">
-                    {material}
-                  </span>
-                </label>
-              ))}
-            </div>
+              </label>
+            ))}
           </div>
         </div>
 
         {/* Status Filter */}
-        <div>
-          <button
-            onClick={() => toggleSection('status')}
-            className="w-full flex items-center justify-between p-5 hover:bg-gray-50 transition-colors duration-300"
-          >
-            <div className="flex items-center gap-2">
-              <h4 className="font-semibold text-gray-900">Tình trạng</h4>
-              {selectedStatus && (
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 text-xs font-bold rounded-full">
-                  1
-                </span>
-              )}
-            </div>
-            {expandedSections.status ? (
-              <ChevronUp className="w-5 h-5 text-gray-500" />
-            ) : (
-              <ChevronDown className="w-5 h-5 text-gray-500" />
-            )}
-          </button>
-          <div
-            className={`overflow-hidden transition-all duration-500 ${expandedSections.status ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'
-              }`}
-          >
-            <div className="px-5 pb-5 space-y-3">
-              <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-green-50 transition-colors duration-300">
-                <div className="relative">
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={selectedStatus === ''}
-                    onChange={() => handleStatusChange('')}
-                    className="w-5 h-5 text-green-600 border-2 border-gray-300 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all cursor-pointer"
-                  />
-                </div>
-                <span className="text-gray-700 group-hover:text-green-600 transition-colors font-medium">
-                  Tất cả
-                </span>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-green-50 transition-colors duration-300">
-                <div className="relative">
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={selectedStatus === 'Available'}
-                    onChange={() => handleStatusChange('Available')}
-                    className="w-5 h-5 text-green-600 border-2 border-gray-300 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all cursor-pointer"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-green-500 rounded-full" />
-                  <span className="text-gray-700 group-hover:text-green-600 transition-colors font-medium">
-                    Còn hàng
-                  </span>
-                </div>
-              </label>
-              <label className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-green-50 transition-colors duration-300">
-                <div className="relative">
-                  <input
-                    type="radio"
-                    name="status"
-                    checked={selectedStatus === 'Unavailable'}
-                    onChange={() => handleStatusChange('Unavailable')}
-                    className="w-5 h-5 text-green-600 border-2 border-gray-300 focus:ring-2 focus:ring-green-500 focus:ring-offset-2 transition-all cursor-pointer"
-                  />
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-2 h-2 bg-red-500 rounded-full" />
-                  <span className="text-gray-700 group-hover:text-green-600 transition-colors font-medium">
-                    Hết hàng
-                  </span>
-                </div>
-              </label>
-            </div>
+        <div className="border-t pt-6">
+          <h4 className="font-semibold text-gray-900 mb-3">Tình trạng</h4>
+          <div className="space-y-2">
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input
+                type="radio"
+                name="status"
+                checked={selectedStatus === ''}
+                onChange={() => handleStatusChange('')}
+                className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+              />
+              <span className="text-gray-700 group-hover:text-green-600 transition">
+                Tất cả
+              </span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input
+                type="radio"
+                name="status"
+                checked={selectedStatus === 'Available'}
+                onChange={() => handleStatusChange('Available')}
+                className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+              />
+              <span className="text-gray-700 group-hover:text-green-600 transition">
+                Còn hàng
+              </span>
+            </label>
+            <label className="flex items-center gap-2 cursor-pointer group">
+              <input
+                type="radio"
+                name="status"
+                checked={selectedStatus === 'Unavailable'}
+                onChange={() => handleStatusChange('Unavailable')}
+                className="w-4 h-4 text-green-600 border-gray-300 focus:ring-green-500"
+              />
+              <span className="text-gray-700 group-hover:text-green-600 transition">
+                Hết hàng
+              </span>
+            </label>
           </div>
         </div>
       </div>
 
       {/* Active Filters Summary */}
       {hasActiveFilters && (
-        <div className="border-t border-gray-100 p-5 bg-gradient-to-br from-green-50 to-emerald-50">
-          <p className="text-xs font-semibold text-gray-600 mb-3 uppercase tracking-wide">Đã chọn:</p>
+        <div className="border-t p-4 bg-green-50">
           <div className="flex flex-wrap gap-2">
             {selectedCategories.map(cat => (
               <span
                 key={cat}
-                className="group inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-green-200 text-green-700 text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
+                className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full"
               >
                 {cat}
                 <button
                   onClick={() => handleCategoryToggle(cat)}
-                  className="hover:bg-green-100 rounded-full p-0.5 transition-colors"
-                  aria-label={`Remove ${cat} filter`}
+                  className="hover:text-green-900"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  ×
                 </button>
               </span>
             ))}
             {selectedMaterials.map(mat => (
               <span
                 key={mat}
-                className="group inline-flex items-center gap-2 px-3 py-1.5 bg-white border border-green-200 text-green-700 text-sm font-medium rounded-lg shadow-sm hover:shadow-md transition-all duration-300"
+                className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full"
               >
                 {mat}
                 <button
                   onClick={() => handleMaterialToggle(mat)}
-                  className="hover:bg-green-100 rounded-full p-0.5 transition-colors"
-                  aria-label={`Remove ${mat} filter`}
+                  className="hover:text-green-900"
                 >
-                  <X className="w-3.5 h-3.5" />
+                  ×
                 </button>
               </span>
             ))}

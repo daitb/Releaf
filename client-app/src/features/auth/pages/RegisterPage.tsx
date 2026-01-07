@@ -3,14 +3,14 @@ import { Link } from "react-router-dom";
 import { Leaf } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { register as registerRequest } from "@features/auth/services/authService";
-import { useAsyncError } from "@shared/hooks/useAsyncError";
+import { useAsyncState } from "@shared/hooks/useAsyncState";
 
 export default function RegisterPage() {
     const [fullName, setFullName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
-    const { execute, isLoading } = useAsyncError();
+    const { execute, isLoading } = useAsyncState();
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
         event.preventDefault();

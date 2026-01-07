@@ -1,4 +1,4 @@
-import type { Product } from "@entities/product/model";
+import type { Product } from "../types/product";
 import { Link } from "react-router-dom";
 import { useState } from "react";
 import fallbackImage from "@assets/forest.jpg";

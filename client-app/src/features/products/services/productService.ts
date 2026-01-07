@@ -1,5 +1,5 @@
 import { apiClient } from "@shared/api/apiClient";
-import type { Product } from "@entities/product/model";
+import type { Product } from "../types/product";
 
 interface ProductQueryParams {
     q?: string;

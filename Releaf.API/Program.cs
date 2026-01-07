@@ -1,12 +1,15 @@
 
 using System.Text;
+using FluentValidation;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using Releaf.API.Behaviors;
 using Releaf.API.Data;
 using Releaf.API.Interfaces;
 using Releaf.API.Mapping;
+using Releaf.API.Middleware;
 using Releaf.API.Repositories;
 using Releaf.API.Services;
 
@@ -23,7 +26,17 @@ namespace Releaf.API
             builder.Services.AddDbContext<ReleafDbContext>(options =>
                     options.UseSqlServer(config.GetConnectionString("DefaultConnection")));
 
-            builder.Services.AddControllers();
+            // Add controllers with Validation Filter
+            builder.Services.AddControllers(options =>
+            {
+                // Automatically validate DTOs before they reach controller actions
+                options.Filters.Add<ValidationActionFilter>();
+            });
+
+            // Register all validators from this assembly
+            // This scans for all classes that implement AbstractValidator<T>
+            builder.Services.AddValidatorsFromAssemblyContaining<Program>();
+            builder.Services.AddScoped<ValidationActionFilter>();
 
             builder.Services.AddAutoMapper(cfg =>
             {
@@ -70,6 +83,10 @@ namespace Releaf.API
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<IRoleRepository, RoleRepository>();
             builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+            
+            // Register Unit of Work - coordinates multiple repositories in a single transaction
+            builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
+            
             builder.Services.AddHttpContextAccessor();
             builder.Services.AddMemoryCache();
 
@@ -103,6 +120,11 @@ namespace Releaf.API
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
+            
+            // IMPORTANT: Exception middleware must be FIRST!
+            // This ensures it catches exceptions from ALL subsequent middleware
+            app.UseExceptionHandling();
+            
             if (app.Environment.IsDevelopment())
             {
                 app.UseSwagger();

@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
-import type { Product } from '@entities/product/model';
+import type { Product } from '@features/products/types/product';
 import { fetchBestSellingProducts } from '@features/products/services/productService';
-import { useAsync } from '@shared/hooks/useAsync';
+import { useAsyncState } from '@shared/hooks/useAsyncState';
 import HeroSection from '../components/HeroSection';
 import HighlightsSection from '../components/HighlightsSection';
 import CategorySpotlightSection from '../components/CategorySpotlightSection';
@@ -11,7 +11,7 @@ import TestimonialsSection from '../components/TestimonialsSection';
 import CTASection from '../components/CTASection';
 
 export default function HomePage() {
-    const { data, isLoading, error, execute } = useAsync<Product[]>();
+    const { data, isLoading, error, execute } = useAsyncState<Product[]>();
     const productList = data ?? [];
 
     useEffect(() => {
@@ -23,7 +23,7 @@ export default function HomePage() {
             <HeroSection />
             <HighlightsSection />
             <CategorySpotlightSection />
-            <ProductsSection 
+            <ProductsSection
                 productList={productList}
                 isLoading={isLoading}
                 error={error}

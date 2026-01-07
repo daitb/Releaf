@@ -4,12 +4,12 @@ import { Leaf } from "lucide-react";
 import toast, { Toaster } from "react-hot-toast";
 import { login as loginRequest } from "@features/auth/services/authService";
 import { useAuth } from "@features/auth/context/AuthContext";
-import { useAsyncError } from "@shared/hooks/useAsyncError";
+import { useAsyncState } from "@shared/hooks/useAsyncState";
 
 export default function LoginPage() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const { execute, isLoading } = useAsyncError();
+    const { execute, isLoading } = useAsyncState();
     const { login } = useAuth();
 
     const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

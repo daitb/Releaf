@@ -12,8 +12,6 @@ const sortLabels: Record<SortOption, string> = {
 
 interface ProductListToolbarProps {
     resultCount: number;
-    viewMode: "grid" | "list";
-    onViewModeChange: (mode: "grid" | "list") => void;
     sortOption: SortOption;
     onSortChange: (option: SortOption) => void;
     activeFilters: FilterOptions;
@@ -25,8 +23,6 @@ const formatPrice = (value: number) =>
 
 export default function ProductListToolbar({
     resultCount,
-    viewMode,
-    onViewModeChange,
     sortOption,
     onSortChange,
     activeFilters,
@@ -50,28 +46,6 @@ export default function ProductListToolbar({
                 </div>
                 <div className="flex items-center gap-3">
                     <button
-                        className={`p-3 rounded-xl border ${viewMode === "grid"
-                                ? "bg-green-50 border-green-200 text-green-700"
-                                : "border-gray-200 text-gray-400"
-                            }`}
-                        type="button"
-                        onClick={() => onViewModeChange("grid")}
-                        aria-label="Xem dạng lưới"
-                    >
-                        <LayoutGrid className="w-5 h-5" />
-                    </button>
-                    <button
-                        className={`p-3 rounded-xl border ${viewMode === "list"
-                                ? "bg-green-50 border-green-200 text-green-700"
-                                : "border-gray-200 text-gray-400"
-                            }`}
-                        type="button"
-                        onClick={() => onViewModeChange("list")}
-                        aria-label="Xem dạng danh sách"
-                    >
-                        <Rows className="w-5 h-5" />
-                    </button>
-                    <button
                         type="button"
                         className="lg:hidden flex items-center gap-2 px-4 py-3 rounded-xl border border-gray-200 text-gray-700 font-semibold"
                         onClick={onShowMobileFilters}
@@ -93,8 +67,8 @@ export default function ProductListToolbar({
                             key={option}
                             type="button"
                             className={`px-4 py-2 text-sm rounded-full border transition-colors ${sortOption === option
-                                    ? "border-green-500 bg-green-50 text-green-600"
-                                    : "border-gray-200 text-gray-600 hover:border-green-200"
+                                ? "border-green-500 bg-green-50 text-green-600"
+                                : "border-gray-200 text-gray-600 hover:border-green-200"
                                 }`}
                             onClick={() => onSortChange(option)}
                         >

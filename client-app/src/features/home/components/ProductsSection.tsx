@@ -65,9 +65,6 @@ export default function ProductsSection({ productList, isLoading, error }: Produ
                     <div>
                         <p className='text-green-600 font-semibold'>Best seller tuần này</p>
                         <h2 className='text-3xl font-bold mt-2'>Top sản phẩm được yêu thích</h2>
-                        <p className='text-gray-600 mt-3'>
-                            Dữ liệu cập nhật theo thời gian thực từ hành trình mua sắm của cộng đồng Releaf.
-                        </p>
                     </div>
                     <Link to="/products" className='inline-flex items-center gap-2 text-green-700 font-semibold hover:text-green-800 transition'>
                         Xem tất cả sản phẩm

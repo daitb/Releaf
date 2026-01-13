@@ -118,7 +118,7 @@ export default function ProductFilters({ onFilterChange, isOpen = true }: Produc
         )}
       </div>
 
-      <div className="p-6 space-y-6 max-h-[calc(100vh-300px)] overflow-y-auto">
+      <div className="p-6 space-y-6 max-h-[calc(100vh-200px)] overflow-y-auto">
         {/* Category Filter */}
         <div>
           <h4 className="font-semibold text-gray-900 mb-3">Danh mục</h4>
@@ -223,42 +223,6 @@ export default function ProductFilters({ onFilterChange, isOpen = true }: Produc
           </div>
         </div>
       </div>
-
-      {/* Active Filters Summary */}
-      {hasActiveFilters && (
-        <div className="border-t p-4 bg-green-50">
-          <div className="flex flex-wrap gap-2">
-            {selectedCategories.map(cat => (
-              <span
-                key={cat}
-                className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full"
-              >
-                {cat}
-                <button
-                  onClick={() => handleCategoryToggle(cat)}
-                  className="hover:text-green-900"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-            {selectedMaterials.map(mat => (
-              <span
-                key={mat}
-                className="inline-flex items-center gap-1 px-3 py-1 bg-green-100 text-green-700 text-sm rounded-full"
-              >
-                {mat}
-                <button
-                  onClick={() => handleMaterialToggle(mat)}
-                  className="hover:text-green-900"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

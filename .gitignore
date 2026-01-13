@@ -12,6 +12,12 @@
 ### Static File
 /Releaf.API/wwwroot/
 
+# ASP.NET Core appsettings (secrets)
+appsettings.Development.json
+appsettings.Production.json
+appsettings.Staging.json
+
+
 # Local History for Visual Studio Code
 .history/
 

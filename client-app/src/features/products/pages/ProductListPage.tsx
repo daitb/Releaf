@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { ChevronRight, Leaf, Loader2, Search } from "lucide-react";
 import type { FilterOptions } from "../components/ProductFilters";
@@ -6,13 +6,9 @@ import ProductFilters from "../components/ProductFilters";
 import ProductListHero from "../components/ProductListHero";
 import ProductListToolbar from "../components/ProductListToolbar";
 import ProductGrid from "../components/ProductGrid";
-import ProductListView from "../components/ProductListView";
 import ProductPagination from "../components/ProductPagination";
 import { useProductList } from "../hooks/useProductList";
 import { useProductFilters, type SortOption } from "../hooks/useProductFilters";
-
-const formatPrice = (value: number) =>
-    new Intl.NumberFormat("vi-VN", { style: "currency", currency: "VND" }).format(value);
 
 export default function ProductListPage() {
     // URL params
@@ -23,7 +19,6 @@ export default function ProductListPage() {
     // Local states (giảm từ 10 xuống 5 states)
     const [searchTerm, setSearchTerm] = useState(appliedQuery);
     const [sortOption, setSortOption] = useState<SortOption>("newest");
-    const [viewMode, setViewMode] = useState<"grid" | "list">("grid");
     const [activeFilters, setActiveFilters] = useState<FilterOptions>({});
     const [showMobileFilters, setShowMobileFilters] = useState(false);
     const [filtersVersion, setFiltersVersion] = useState(0);
@@ -42,26 +37,6 @@ export default function ProductListPage() {
     useEffect(() => {
         setSearchTerm(appliedQuery);
     }, [appliedQuery]);
-
-    // Calculate hero stats
-    const heroStats = useMemo(() => {
-        if (!products.length) {
-            return [
-                { label: "Sản phẩm đã kiểm duyệt", value: "—" },
-                { label: "Tỉ lệ còn hàng", value: "—" },
-                { label: "Giá trung bình", value: "—" }
-            ];
-        }
-
-        const available = products.filter((item) => item.productStatus === "Available").length;
-        const averagePrice = products.reduce((sum, item) => sum + item.price, 0) / products.length;
-
-        return [
-            { label: "Sản phẩm đã kiểm duyệt", value: `${products.length}+` },
-            { label: "Tỉ lệ còn hàng", value: `${Math.round((available / products.length) * 100)}%` },
-            { label: "Giá trung bình", value: formatPrice(Math.round(averagePrice || 0)) }
-        ];
-    }, [products]);
 
     const totalPages = Math.max(1, Math.ceil(pagination.totalCount / pagination.pageSize));
 
@@ -98,27 +73,6 @@ export default function ProductListPage() {
         setFiltersVersion((prev) => prev + 1);
     };
 
-    // Error state
-    if (error) {
-        return (
-            <div className="max-w-3xl mx-auto px-4 py-16 text-center">
-                <div className="bg-white border border-red-100 rounded-3xl p-10 shadow-lg space-y-4">
-                    <div className="w-16 h-16 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center mx-auto">
-                        !
-                    </div>
-                    <h2 className="text-2xl font-semibold text-gray-900">Đã xảy ra lỗi</h2>
-                    <p className="text-gray-600">{error}</p>
-                    <button
-                        className="px-6 py-3 bg-green-600 text-white rounded-xl font-semibold hover:bg-green-700 transition-colors"
-                        onClick={() => window.location.reload()}
-                    >
-                        Thử lại
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
     return (
         <div className="min-h-screen bg-gradient-to-b from-slate-50 via-white to-green-50/20">
             <ProductListHero
@@ -126,27 +80,50 @@ export default function ProductListPage() {
                 onSearchTermChange={setSearchTerm}
                 onSearchSubmit={handleSearchSubmit}
                 onQuickSearch={handleQuickSearch}
-                stats={heroStats}
             />
-
-            <section className="max-w-7xl mx-auto px-4 py-10 lg:py-16">
+            <section className="max-w-7xl mx-auto px-4 py-8 lg:py-10">
                 <div className="grid lg:grid-cols-[280px,1fr] gap-8">
-                    <aside className="hidden lg:block sticky top-28 h-fit">
+                    <aside className="hidden lg:block sticky top-16 h-fit">
                         <ProductFilters key={`desktop-${filtersVersion}`} onFilterChange={handleFilterChange} />
                     </aside>
 
                     <div className="space-y-8">
                         <ProductListToolbar
                             resultCount={resultCount}
-                            viewMode={viewMode}
-                            onViewModeChange={setViewMode}
                             sortOption={sortOption}
                             onSortChange={setSortOption}
                             activeFilters={activeFilters}
                             onShowMobileFilters={() => setShowMobileFilters(true)}
                         />
 
-                        {isLoading ? (
+                        {error ? (
+                            <div className="bg-white border border-red-100 rounded-3xl p-12 text-center space-y-4">
+                                <div className="w-16 h-16 rounded-2xl bg-red-50 text-red-500 flex items-center justify-center mx-auto text-2xl font-bold">
+                                    !
+                                </div>
+                                <h3 className="text-2xl font-semibold text-gray-900">Không thể tải sản phẩm</h3>
+                                <p className="text-gray-600 max-w-md mx-auto">{error}</p>
+                                <div className="flex gap-3 justify-center">
+                                    <button
+                                        type="button"
+                                        className="px-6 py-3 text-sm font-semibold text-gray-600 border border-gray-200 rounded-xl hover:bg-gray-50 transition-colors"
+                                        onClick={() => {
+                                            setSearchParams({});
+                                            window.location.reload();
+                                        }}
+                                    >
+                                        Tải lại trang
+                                    </button>
+                                    <button
+                                        type="button"
+                                        className="px-6 py-3 text-sm font-semibold text-white bg-green-600 rounded-xl hover:bg-green-700 transition-colors"
+                                        onClick={() => window.location.reload()}
+                                    >
+                                        Thử lại
+                                    </button>
+                                </div>
+                            </div>
+                        ) : isLoading ? (
                             <div className="flex justify-center py-16">
                                 <Loader2 className="w-12 h-12 animate-spin text-green-500" />
                             </div>
@@ -170,11 +147,11 @@ export default function ProductListPage() {
                                     Xóa bộ lọc
                                 </button>
                             </div>
-                        ) : viewMode === "grid" ? (
-                            <ProductGrid products={filteredProducts} />
                         ) : (
-                            <ProductListView products={filteredProducts} />
-                        )}
+                            <ProductGrid
+                                products={filteredProducts} />
+                        )
+                        }
 
                         <ProductPagination
                             currentPage={pagination.page}

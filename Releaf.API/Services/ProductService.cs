@@ -1,4 +1,5 @@
 ﻿using AutoMapper;
+using Microsoft.EntityFrameworkCore.Storage;
 using Microsoft.Extensions.Caching.Memory;
 using Releaf.API.DTOs;
 using Releaf.API.Exceptions;
@@ -22,19 +23,22 @@ namespace Releaf.API.Services
         private readonly IMapper _mapper;
         private readonly IMemoryCache _cache;
         private readonly IFileStorageService _fileStorageService;
+        private readonly IStorageService _storageService;
 
         public ProductService(
             IProductRepository repository,
             IMapper mapper,
             IMemoryCache cache,
             IOrderDetailRepository orderDetailRepository,
-            IFileStorageService fileStorageService)
+            IFileStorageService fileStorageService,
+            IStorageService storageService)
         {
             _productRepo = repository;
             _mapper = mapper;
             _cache = cache;
             _fileStorageService = fileStorageService;
             _orderDetailRepo = orderDetailRepository;
+            _storageService = storageService;
         }
 
         /// <summary>
@@ -76,28 +80,29 @@ namespace Releaf.API.Services
             // Validation is handled by FluentValidation via ValidationActionFilter
             // No need for manual checks here
 
-            var productEntity = _mapper.Map<Product>(createProductDto);
-            productEntity.CreateAt = DateTime.Now;
+            var product = _mapper.Map<Product>(createProductDto);
+            product.CreateAt = DateTime.Now;
 
             // Process image uploads
-            if (createProductDto.ImageFile != null && createProductDto.ImageFile.Any())
+            if(createProductDto.ImageFile != null)
             {
-                foreach (var imgFile in createProductDto.ImageFile)
+                var imageUrls = await _storageService.UploadFileAsync(createProductDto.ImageFile);
+                foreach (var imgUrl in imageUrls)
                 {
-                    var imageUrl = await _fileStorageService.UploadFileAsync(imgFile, "product-images");
-                    productEntity.ProductImages.Add(new ProductImage
+                    product.ProductImages.Add(new ProductImage
                     {
-                        ImageUrl = imageUrl,
-                        IsPrimary = !productEntity.ProductImages.Any()
+                        ImageUrl = imgUrl,
+                        AltText = product.ProductName,
+                        IsPrimary = !product.ProductImages.Any()
                     });
                 }
             }
 
-            await _productRepo.AddAsync(productEntity);
+            await _productRepo.AddAsync(product);
             await _productRepo.SaveChangesAsync();
 
             // Return the created product
-            return await GetProductByIdAsync(productEntity.ProductId);
+            return await GetProductByIdAsync(product.ProductId);
         }
 
         /// <summary>

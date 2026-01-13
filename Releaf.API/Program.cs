@@ -83,6 +83,7 @@ namespace Releaf.API
             builder.Services.AddScoped<IJwtService, JwtService>();
             builder.Services.AddScoped<IRoleRepository, RoleRepository>();
             builder.Services.AddScoped<IFileStorageService, LocalFileStorageService>();
+            builder.Services.AddScoped<IStorageService, StorageService>();
             
             // Register Unit of Work - coordinates multiple repositories in a single transaction
             builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
